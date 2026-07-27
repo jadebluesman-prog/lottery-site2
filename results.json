@@ -1,7 +1,7 @@
 {
   "lao": [
     {
-            "date": "2026-07-27",
+      "date": "2026-07-27",
       "time": "02:19",
       "status": "out",
       "main": "804970",
@@ -11,7 +11,7 @@
   ],
   "hanoi_special": [
     {
-            "date": "2026-07-27",
+      "date": "2026-07-27",
       "time": "02:19",
       "status": "out",
       "main": "52035",
@@ -21,7 +21,7 @@
   ],
   "hanoi_normal": [
     {
-            "date": "2026-07-27",
+      "date": "2026-07-27",
       "time": "02:19",
       "status": "out",
       "main": "54796",
@@ -31,7 +31,7 @@
   ],
   "hanoi_vip": [
     {
-            "date": "2026-07-27",
+      "date": "2026-07-27",
       "time": "02:19",
       "status": "out",
       "main": "36511",
@@ -40,13 +40,13 @@
     }
   ],
   "_meta": {
-    "last_run": "2026-07-28T02:19:38+07:00",
-    "updated": [
-      "lao",
-      "hanoi_special",
-      "hanoi_normal",
-      "hanoi_vip"
-    ],
-    "errors": {}
+    "last_run": "2026-07-28T02:41:35+07:00",
+    "updated": [],
+    "errors": {
+      "lao": "ไม่พบชุดผลรางวัล (title='รอสักครู่...', url='https://exphuay.com/result/laosdevelops')",
+      "hanoi_special": "ไม่พบชุดผลรางวัล (title='รอสักครู่...', url='https://exphuay.com/result/xsthm')",
+      "hanoi_normal": "ไม่พบชุดผลรางวัล (title='รอสักครู่...', url='https://exphuay.com/result/minhngoc')",
+      "hanoi_vip": "ไม่พบชุดผลรางวัล (title='รอสักครู่...', url='https://exphuay.com/result/mlnhngo')"
+    }
   }
 }
