@@ -3,63 +3,110 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ห้องหวยลาว–ฮานอย</title>
+<title>ผลหวยวันนี้</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@500;700&display=swap');
   * { box-sizing: border-box; }
+  :root {
+    color-scheme: dark;
+    --bg: #0E1A1B; --panel: #16282A; --panel-soft: #1B3032;
+    --text: #F1EDE2; --muted: #93A5A0; --quiet: #6E827D;
+    --border: rgba(255,255,255,0.08); --tile-top: #1E3335;
+    --tile-bottom: #152425; --tile-text: #E8B84B; --shadow: rgba(0,0,0,0.28);
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --bg: #F3F0E8; --panel: #FFFFFF; --panel-soft: #F7F5EF;
+    --text: #183032; --muted: #4F6864; --quiet: #6B7D79;
+    --border: rgba(14,42,44,0.12); --tile-top: #FFF8E6;
+    --tile-bottom: #F4E9C9; --tile-text: #9A6510; --shadow: rgba(25,55,52,0.10);
+  }
   body {
-    margin: 0; background: #0E1A1B; color: #F1EDE2;
+    margin: 0; background: var(--bg); color: var(--text);
     font-family: 'IBM Plex Sans Thai', sans-serif;
     padding: 28px 18px 60px;
+    transition: background .25s ease, color .25s ease;
   }
   .wrap { max-width: 900px; margin: 0 auto; }
-  h1 { font-family: 'Noto Serif Thai', serif; font-size: 28px; margin: 0; }
-  .sub { color: #6E827D; font-size: 13px; margin: 4px 0 0; }
-  .updated { color: #4A5C58; font-size: 12px; font-family: 'IBM Plex Mono', monospace; }
+  h1 { font-family: 'Noto Serif Thai', serif; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; letter-spacing: -.02em; }
+  .sub { color: var(--quiet); font-size: 13px; margin: 4px 0 0; }
+  .updated { color: var(--quiet); font-size: 12px; text-align: right; line-height: 1.25; }
+  .updated-label { display: block; font-size: 12px; font-weight: 500; }
+  .updated-value { display: flex; align-items: baseline; justify-content: flex-end; gap: 7px; margin-top: 2px; font-family: 'IBM Plex Mono', monospace; white-space: nowrap; }
+  .updated-date { color: var(--text); font-size: 19px; font-weight: 700; letter-spacing: -.02em; }
+  .updated-time { color: var(--quiet); font-size: 12px; font-weight: 500; }
   .updated.error { color: #E8B84B; }
   .header-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 22px; flex-wrap: wrap; gap: 8px; }
-  .panel { background: #16282A; border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; }
+  .header-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+  .theme-toggle { appearance: none; display: inline-grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 50%; padding: 0; cursor: pointer; font-size: 19px; line-height: 1; box-shadow: 0 5px 18px var(--shadow); }
+  .theme-toggle:hover { transform: translateY(-1px); }
+  .theme-toggle:focus-visible { outline: 3px solid rgba(232,184,75,.35); outline-offset: 2px; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 10px 28px var(--shadow); }
   .cards { display: grid; gap: 14px; margin-bottom: 28px; }
-  .card { padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
-  .tag { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; margin-right: 8px; }
-  .name { font-weight: 600; font-size: 16px; margin-top: 6px; }
-  .schedule { color: #6E827D; font-size: 12px; margin-top: 2px; }
+  .card { position: relative; overflow: hidden; padding: 20px 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
+  .card::after { content: ""; position: absolute; inset: auto -60px -80px auto; width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, rgba(232,184,75,.08), transparent 68%); pointer-events: none; }
+  .tag { display: inline-flex; align-items: center; justify-content: center; min-width: 52px; font: 800 15px 'IBM Plex Mono', monospace; letter-spacing: .08em; padding: 7px 12px; border-radius: 9px; box-shadow: 0 6px 18px var(--shadow); }
+  .name { font-weight: 700; font-size: 18px; margin-top: 9px; }
+  .schedule { color: var(--quiet); font-size: 12px; margin-top: 2px; }
   .badge { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; margin-top: 8px; }
   .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 6px; }
   @keyframes pulse { 0%,100% { opacity: .35 } 50% { opacity: 1 } }
   .dot-waiting, .tile.waiting { animation: pulse 1.6s ease-in-out infinite; }
-  .tiles { display: flex; gap: 6px; }
+  .tiles { display: flex; gap: 7px; }
   .tile-group { display: flex; gap: 5px; }
   .tile {
-    width: 36px; height: 48px; border-radius: 6px;
-    background: linear-gradient(180deg,#1E3335,#152425);
+    width: 44px; height: 58px; border-radius: 9px;
+    background: linear-gradient(180deg,var(--tile-top),var(--tile-bottom));
     display: flex; align-items: center; justify-content: center;
-    font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 22px; color: #E8B84B;
-    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.05);
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 28px; color: var(--tile-text);
+    box-shadow: inset 0 -3px 0 rgba(0,0,0,0.30), 0 7px 20px var(--shadow);
   }
   .tile.small { width: 30px; height: 40px; font-size: 17px; }
   .tile.waiting { color: #5D6E6A; }
-  .field-label { text-align: center; font-size: 10px; color: #6E827D; margin-top: 4px; }
-  .action-group { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .field-label { text-align: center; font-size: 11px; font-weight: 600; color: var(--quiet); margin-top: 7px; letter-spacing: .04em; }
+  .action-group { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+  .main-result { display: flex; flex-direction: column; align-items: flex-end; }
+  .prize-breakdown { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid var(--border); width: 100%; }
+  .prize { min-width: 82px; padding: 8px 10px; border-radius: 10px; background: var(--panel-soft); border: 1px solid var(--border); text-align: center; }
+  .prize-label { display: block; color: var(--quiet); font-size: 10px; margin-bottom: 2px; }
+  .prize-number { color: var(--text); font: 700 18px 'IBM Plex Mono', monospace; letter-spacing: .08em; }
   .tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
-  .tab { cursor: pointer; padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; color: #93A5A0; }
+  .tab { cursor: pointer; padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--muted); }
   .tab.active { color: #0E1A1B; }
+  .history-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 4px 0 12px; }
+  .history-title { font-weight: 700; font-size: 14px; }
+  .month-select { appearance: none; min-width: 150px; border: 1px solid var(--border); border-radius: 10px; padding: 8px 32px 8px 11px; background: var(--panel-soft); color: var(--text); font: 500 12px 'IBM Plex Sans Thai', sans-serif; cursor: pointer; }
+  .table-wrap { overflow-x: auto; border-radius: 10px; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { text-align: left; color: #6E827D; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-  td { padding: 9px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-family: 'IBM Plex Mono', monospace; }
+  th { text-align: left; color: var(--quiet); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  td { padding: 9px 10px; border-bottom: 1px solid var(--border); font-family: 'IBM Plex Mono', monospace; }
   td.status-cell { font-family: 'IBM Plex Sans Thai', sans-serif; }
   tr:hover td { background: rgba(255,255,255,0.02); }
-  .empty { color: #6E827D; font-size: 13px; padding: 20px 4px; }
+  .empty { color: var(--quiet); font-size: 13px; padding: 20px 4px; }
+  @media (max-width: 620px) {
+    body { padding: 20px 12px 42px; }
+    .card { align-items: stretch; }
+    .action-group, .main-result { align-items: flex-start; width: 100%; }
+    .prize-breakdown { justify-content: flex-start; }
+    .card { padding: 18px 16px; }
+    .tile { width: 38px; height: 52px; font-size: 24px; }
+    .header-actions { justify-content: space-between; width: 100%; }
+    .history-toolbar { align-items: stretch; flex-direction: column; }
+    .month-select { width: 100%; }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="header-row">
     <div>
-      <h1>ห้องหวยลาว–ฮานอย</h1>
-      <p class="sub">ผลล่าสุดอยู่บนสุดเสมอ · อัปเดตอัตโนมัติจาก GitHub Actions</p>
+      <h1>ผลหวยวันนี้</h1>
+      <p class="sub">ผลหวยไทย ผลหวยลาว ผลหวยฮานอย</p>
     </div>
-    <div class="updated" id="updated-at">กำลังโหลด…</div>
+    <div class="header-actions">
+      <div class="updated" id="updated-at">กำลังโหลด…</div>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="เปลี่ยนเป็นธีมสว่าง" title="เปลี่ยนธีม">☀</button>
+    </div>
   </div>
 
   <div class="cards" id="cards"></div>
@@ -80,6 +127,26 @@ const LOTTERY_TYPES = [
 
 let DATA = { lao: [], hanoi_special: [], hanoi_normal: [], hanoi_vip: [] };
 let activeTab = "lao";
+let activeMonth = "all";
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  const button = document.getElementById("theme-toggle");
+  const isLight = theme === "light";
+  button.textContent = isLight ? "☾" : "☀";
+  button.setAttribute("aria-label", isLight ? "เปลี่ยนเป็นธีมมืด" : "เปลี่ยนเป็นธีมสว่าง");
+  button.setAttribute("aria-pressed", String(isLight));
+}
+
+const savedTheme = localStorage.getItem("lottery-theme");
+const preferredTheme = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+applyTheme(savedTheme || preferredTheme);
+
+document.getElementById("theme-toggle").addEventListener("click", () => {
+  const nextTheme = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+  localStorage.setItem("lottery-theme", nextTheme);
+  applyTheme(nextTheme);
+});
 
 function sortDesc(list) {
   return [...list].sort((a, b) => (a.date + (a.time||"") < b.date + (b.time||"") ? 1 : -1));
@@ -94,6 +161,13 @@ function tile(char, small, waiting) {
   return `<div class="tile ${small ? "small" : ""} ${waiting ? "waiting" : ""}">${waiting ? "–" : (char || "–")}</div>`;
 }
 
+function prize(label, value, waiting) {
+  return `<div class="prize">
+    <span class="prize-label">${label}</span>
+    <span class="prize-number">${waiting ? "–" : (value || "–")}</span>
+  </div>`;
+}
+
 function renderCards() {
   const el = document.getElementById("cards");
   el.innerHTML = LOTTERY_TYPES.map(t => {
@@ -106,10 +180,16 @@ function renderCards() {
     } else {
       mainTiles = `<div class="tiles">${Array.from({length:5}).map((_,i)=>tile(mainStr[i], false, isWaiting)).join("")}</div>`;
     }
+    const top3 = latest && latest.top3 ? String(latest.top3).padStart(3, "0") : mainStr.slice(-3);
+    const top2 = mainStr.slice(-2);
+    const bottom2 = latest && latest.bottom2 ? String(latest.bottom2).padStart(2, "0") : "";
+    const breakdown = t.id === "lao"
+      ? prize("3 ตัวบน", top3, isWaiting) + prize("2 ตัวบน", top2, isWaiting) + prize("2 ตัวล่าง", bottom2, isWaiting)
+      : prize("3 ตัวบน", top3, isWaiting) + prize("2 ตัวล่าง", bottom2, isWaiting);
     return `
-    <div class="panel card">
+    <div class="panel card" style="border-left:4px solid ${t.accent}">
       <div style="min-width:160px;">
-        <span class="tag" style="background:${t.accentSoft};color:${t.accent}">${t.tag}</span>
+        <span class="tag" style="background:${t.accent};color:#fff">${t.tag}</span>
         <div class="name">${t.label}</div>
         <div class="schedule">${t.schedule}</div>
         <div class="badge" style="background:${isWaiting ? 'rgba(232,184,75,0.15)' : 'rgba(76,139,103,0.18)'};color:${isWaiting ? '#E8B84B' : '#7ED2A0'}">
@@ -118,7 +198,13 @@ function renderCards() {
           ${latest ? `<span style="margin-left:8px;opacity:.7">${latest.date}</span>` : ""}
         </div>
       </div>
-      <div class="action-group">${mainTiles}</div>
+      <div class="action-group">
+        <div class="main-result">
+          ${mainTiles}
+          <div class="field-label">${t.id === "lao" ? "เลขรางวัล 6 หลัก" : "เลขรางวัล 5 หลัก"}</div>
+        </div>
+        <div class="prize-breakdown">${breakdown}</div>
+      </div>
     </div>`;
   }).join("");
 }
@@ -129,7 +215,7 @@ function renderTabs() {
     <div class="tab ${activeTab === t.id ? 'active' : ''}" style="${activeTab === t.id ? `background:${t.accent}` : ''}" data-id="${t.id}">${t.label}</div>
   `).join("");
   el.querySelectorAll(".tab").forEach(elm => {
-    elm.addEventListener("click", () => { activeTab = elm.dataset.id; renderTabs(); renderHistory(); });
+    elm.addEventListener("click", () => { activeTab = elm.dataset.id; activeMonth = "all"; renderTabs(); renderHistory(); });
   });
 }
 
@@ -140,19 +226,47 @@ function renderHistory() {
     el.innerHTML = `<div class="empty">ยังไม่มีประวัติของประเภทนี้</div>`;
     return;
   }
-  const rows = list.map(e => `
+  const months = [...new Set(list.map(e => String(e.date).slice(0, 7)))];
+  if (activeMonth !== "all" && !months.includes(activeMonth)) activeMonth = "all";
+  const filteredList = activeMonth === "all"
+    ? list
+    : list.filter(e => String(e.date).startsWith(activeMonth));
+  const monthLabel = month => new Intl.DateTimeFormat("th-TH", {
+    month: "long",
+    year: "numeric"
+  }).format(new Date(`${month}-01T12:00:00`));
+  const monthOptions = [
+    `<option value="all">ทุกเดือน (${list.length} งวด)</option>`,
+    ...months.map(month => {
+      const count = list.filter(e => String(e.date).startsWith(month)).length;
+      return `<option value="${month}" ${activeMonth === month ? "selected" : ""}>${monthLabel(month)} (${count})</option>`;
+    })
+  ].join("");
+  const isLao = activeTab === "lao";
+  const rows = filteredList.map(e => `
     <tr>
       <td>${e.date}</td>
       <td>${e.main || "-"}</td>
       <td>${e.top3 || "-"}</td>
+      ${isLao ? `<td>${e.main ? String(e.main).slice(-2) : "-"}</td>` : ""}
       <td>${e.bottom2 || "-"}</td>
       <td class="status-cell">${e.status === "waiting" ? "รอผล" : "ออกแล้ว"}</td>
     </tr>`).join("");
   el.innerHTML = `
-    <table>
-      <thead><tr><th>วันที่</th><th>เลขหลัก</th><th>3 ตัวบน</th><th>2 ตัวล่าง</th><th>สถานะ</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
+    <div class="history-toolbar">
+      <div class="history-title">ประวัติผลรางวัล</div>
+      <select class="month-select" id="month-select" aria-label="เลือกเดือน">${monthOptions}</select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>วันที่</th><th>เลขหลัก</th><th>3 ตัวบน</th>${isLao ? "<th>2 ตัวบน</th>" : ""}<th>2 ตัวล่าง</th><th>สถานะ</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  document.getElementById("month-select").addEventListener("change", event => {
+    activeMonth = event.target.value;
+    renderHistory();
+  });
 }
 
 async function loadData() {
@@ -163,7 +277,19 @@ async function loadData() {
     const updatedEl = document.getElementById("updated-at");
     const lastRun = DATA._meta && DATA._meta.last_run;
     if (lastRun) {
-      updatedEl.textContent = "อัปเดตระบบล่าสุด " + new Date(lastRun).toLocaleString("th-TH");
+      const updatedDate = new Date(lastRun);
+      const dateText = updatedDate.toLocaleDateString("th-TH", {
+        day: "numeric", month: "numeric", year: "numeric"
+      });
+      const timeText = updatedDate.toLocaleTimeString("th-TH", {
+        hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false
+      });
+      updatedEl.innerHTML = `
+        <span class="updated-label">อัปเดตระบบล่าสุด</span>
+        <span class="updated-value">
+          <span class="updated-date">${dateText}</span>
+          <span class="updated-time">${timeText}</span>
+        </span>`;
       updatedEl.classList.remove("error");
     } else {
       updatedEl.textContent = "ยังไม่เคยดึงข้อมูลสำเร็จ";
