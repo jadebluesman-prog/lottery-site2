@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ห้องหวยลาว–ฮานอย</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@500;700&display=swap');
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #0E1A1B; color: #F1EDE2;
+    font-family: 'IBM Plex Sans Thai', sans-serif;
+    padding: 28px 18px 60px;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  h1 { font-family: 'Noto Serif Thai', serif; font-size: 28px; margin: 0; }
+  .sub { color: #6E827D; font-size: 13px; margin: 4px 0 0; }
+  .updated { color: #4A5C58; font-size: 12px; font-family: 'IBM Plex Mono', monospace; }
+  .updated.error { color: #E8B84B; }
+  .header-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 22px; flex-wrap: wrap; gap: 8px; }
+  .panel { background: #16282A; border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; }
+  .cards { display: grid; gap: 14px; margin-bottom: 28px; }
+  .card { padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
+  .tag { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; margin-right: 8px; }
+  .name { font-weight: 600; font-size: 16px; margin-top: 6px; }
+  .schedule { color: #6E827D; font-size: 12px; margin-top: 2px; }
+  .badge { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; margin-top: 8px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+  @keyframes pulse { 0%,100% { opacity: .35 } 50% { opacity: 1 } }
+  .dot-waiting, .tile.waiting { animation: pulse 1.6s ease-in-out infinite; }
+  .tiles { display: flex; gap: 6px; }
+  .tile-group { display: flex; gap: 5px; }
+  .tile {
+    width: 36px; height: 48px; border-radius: 6px;
+    background: linear-gradient(180deg,#1E3335,#152425);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 22px; color: #E8B84B;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.05);
+  }
+  .tile.small { width: 30px; height: 40px; font-size: 17px; }
+  .tile.waiting { color: #5D6E6A; }
+  .field-label { text-align: center; font-size: 10px; color: #6E827D; margin-top: 4px; }
+  .action-group { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .tab { cursor: pointer; padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; color: #93A5A0; }
+  .tab.active { color: #0E1A1B; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: #6E827D; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  td { padding: 9px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-family: 'IBM Plex Mono', monospace; }
+  td.status-cell { font-family: 'IBM Plex Sans Thai', sans-serif; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .empty { color: #6E827D; font-size: 13px; padding: 20px 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header-row">
+    <div>
+      <h1>ห้องหวยลาว–ฮานอย</h1>
+      <p class="sub">ผลล่าสุดอยู่บนสุดเสมอ · อัปเดตอัตโนมัติจาก GitHub Actions</p>
+    </div>
+    <div class="updated" id="updated-at">กำลังโหลด…</div>
+  </div>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="panel" style="padding:18px;">
+    <div class="tabs" id="tabs"></div>
+    <div id="history"></div>
+  </div>
+</div>
+
+<script>
+const LOTTERY_TYPES = [
+  { id: "lao", label: "หวยลาวพัฒนา", tag: "ลาว", schedule: "จันทร์–ศุกร์ 20:30 น.", accent: "#4C8B67", accentSoft: "rgba(76,139,103,0.16)" },
+  { id: "hanoi_special", label: "ฮานอยพิเศษ", tag: "VN", schedule: "ทุกวัน 17:30 น.", accent: "#C0463A", accentSoft: "rgba(192,70,58,0.16)" },
+  { id: "hanoi_normal", label: "ฮานอยปกติ", tag: "VN", schedule: "ทุกวัน 18:30 น.", accent: "#C0463A", accentSoft: "rgba(192,70,58,0.16)" },
+  { id: "hanoi_vip", label: "ฮานอย VIP", tag: "VN", schedule: "ทุกวัน 19:30 น.", accent: "#C0463A", accentSoft: "rgba(192,70,58,0.16)" },
+];
+
+let DATA = { lao: [], hanoi_special: [], hanoi_normal: [], hanoi_vip: [] };
+let activeTab = "lao";
+
+function sortDesc(list) {
+  return [...list].sort((a, b) => (a.date + (a.time||"") < b.date + (b.time||"") ? 1 : -1));
+}
+
+function latestOf(id) {
+  const list = sortDesc(DATA[id] || []);
+  return list[0];
+}
+
+function tile(char, small, waiting) {
+  return `<div class="tile ${small ? "small" : ""} ${waiting ? "waiting" : ""}">${waiting ? "–" : (char || "–")}</div>`;
+}
+
+function renderCards() {
+  const el = document.getElementById("cards");
+  el.innerHTML = LOTTERY_TYPES.map(t => {
+    const latest = latestOf(t.id);
+    const isWaiting = !latest || latest.status === "waiting";
+    const mainStr = latest && latest.main ? String(latest.main) : "";
+    let mainTiles;
+    if (t.id === "lao") {
+      mainTiles = `<div class="tiles">${Array.from({length:6}).map((_,i)=>tile(mainStr[i], false, isWaiting)).join("")}</div>`;
+    } else {
+      mainTiles = `<div class="tiles">${Array.from({length:5}).map((_,i)=>tile(mainStr[i], false, isWaiting)).join("")}</div>`;
+    }
+    return `
+    <div class="panel card">
+      <div style="min-width:160px;">
+        <span class="tag" style="background:${t.accentSoft};color:${t.accent}">${t.tag}</span>
+        <div class="name">${t.label}</div>
+        <div class="schedule">${t.schedule}</div>
+        <div class="badge" style="background:${isWaiting ? 'rgba(232,184,75,0.15)' : 'rgba(76,139,103,0.18)'};color:${isWaiting ? '#E8B84B' : '#7ED2A0'}">
+          <span class="dot ${isWaiting ? 'dot-waiting' : ''}" style="background:${isWaiting ? '#E8B84B' : '#7ED2A0'}"></span>
+          ${isWaiting ? "รอผล" : "ออกผลแล้ว"}
+          ${latest ? `<span style="margin-left:8px;opacity:.7">${latest.date}</span>` : ""}
+        </div>
+      </div>
+      <div class="action-group">${mainTiles}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderTabs() {
+  const el = document.getElementById("tabs");
+  el.innerHTML = LOTTERY_TYPES.map(t => `
+    <div class="tab ${activeTab === t.id ? 'active' : ''}" style="${activeTab === t.id ? `background:${t.accent}` : ''}" data-id="${t.id}">${t.label}</div>
+  `).join("");
+  el.querySelectorAll(".tab").forEach(elm => {
+    elm.addEventListener("click", () => { activeTab = elm.dataset.id; renderTabs(); renderHistory(); });
+  });
+}
+
+function renderHistory() {
+  const list = sortDesc(DATA[activeTab] || []);
+  const el = document.getElementById("history");
+  if (list.length === 0) {
+    el.innerHTML = `<div class="empty">ยังไม่มีประวัติของประเภทนี้</div>`;
+    return;
+  }
+  const rows = list.map(e => `
+    <tr>
+      <td>${e.date}</td>
+      <td>${e.main || "-"}</td>
+      <td>${e.top3 || "-"}</td>
+      <td>${e.bottom2 || "-"}</td>
+      <td class="status-cell">${e.status === "waiting" ? "รอผล" : "ออกแล้ว"}</td>
+    </tr>`).join("");
+  el.innerHTML = `
+    <table>
+      <thead><tr><th>วันที่</th><th>เลขหลัก</th><th>3 ตัวบน</th><th>2 ตัวล่าง</th><th>สถานะ</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+async function loadData() {
+  try {
+    const res = await fetch("./results.json?_=" + Date.now());
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    DATA = await res.json();
+    const updatedEl = document.getElementById("updated-at");
+    const lastRun = DATA._meta && DATA._meta.last_run;
+    if (lastRun) {
+      updatedEl.textContent = "อัปเดตระบบล่าสุด " + new Date(lastRun).toLocaleString("th-TH");
+      updatedEl.classList.remove("error");
+    } else {
+      updatedEl.textContent = "ยังไม่เคยดึงข้อมูลสำเร็จ";
+      updatedEl.classList.add("error");
+    }
+  } catch (e) {
+    const updatedEl = document.getElementById("updated-at");
+    updatedEl.textContent = "โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่";
+    updatedEl.classList.add("error");
+  }
+  renderCards();
+  renderTabs();
+  renderHistory();
+}
+
+loadData();
+// รีโหลดข้อมูลทุก 5 นาที เผื่อมีการอัปเดตใหม่ระหว่างที่เปิดหน้าเว็บค้างไว้
+setInterval(loadData, 5 * 60 * 1000);
+</script>
+</body>
+</html>
