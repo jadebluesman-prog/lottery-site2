@@ -1,0 +1,61 @@
+name: Update lottery results
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scrape_and_update.py"
+      - ".github/workflows/scrape.yml"
+  schedule:
+    # ทุก 10 นาที ระหว่าง 17:30–20:50 น. เวลาไทย (GitHub ใช้เวลา UTC)
+    - cron: "30,40,50 10 * * *"
+    - cron: "*/10 11-12 * * *"
+    - cron: "0,10,20,30,40,50 13 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lottery-scraper
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Download repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Playwright
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Scrape current results
+        run: python scrape_and_update.py
+
+      - name: Save results to GitHub
+        if: always()
+        run: |
+          git config user.name "lottery-results-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add results.json
+          if git diff --cached --quiet; then
+            echo "No data changes"
+            exit 0
+          fi
+          git commit -m "chore: update lottery results"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
