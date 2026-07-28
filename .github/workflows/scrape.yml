@@ -18,14 +18,16 @@ permissions:
 
 concurrency:
   group: lottery-scraper
-  cancel-in-progress: false
+  # ถ้ามีงานเก่าค้าง ให้ยกเลิกงานเก่าและทำงานล่าสุดแทน
+  cancel-in-progress: true
 
 jobs:
   scrape:
     # ใช้คอม Windows ของเจ้าของ repository แทนเครื่องของ GitHub
     # เพราะเว็บต้นทางบล็อก IP ของ GitHub Actions
     runs-on: [self-hosted, Windows, X64]
-    timeout-minutes: 15
+    # งานปกติใช้ประมาณ 1–3 นาที ไม่ปล่อยให้ค้างเกิน 6 นาที
+    timeout-minutes: 6
 
     steps:
       - name: Download repository
