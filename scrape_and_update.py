@@ -27,6 +27,7 @@ PAGES = {
 
 DATA_FILE = Path(__file__).with_name("results.json")
 THAI_TZ = timezone(timedelta(hours=7), name="Asia/Bangkok")
+MAX_HISTORY_PER_TYPE = 730
 THAI_MONTHS = {
     "มกราคม": 1, "กุมภาพันธ์": 2, "มีนาคม": 3, "เมษายน": 4,
     "พฤษภาคม": 5, "มิถุนายน": 6, "กรกฎาคม": 7, "สิงหาคม": 8,
@@ -160,7 +161,7 @@ def upsert(
         entries,
         key=lambda entry: (entry.get("date", ""), entry.get("time", "")),
         reverse=True,
-    )[:120]
+    )[:MAX_HISTORY_PER_TYPE]
 
 
 def save_data(data: dict) -> None:
@@ -185,8 +186,9 @@ def main() -> int:
             user_agent=(
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                 "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/126.0.0.0 Safari/537.36"
+                "Chrome/138.0.0.0 Safari/537.36"
             ),
+            viewport={"width": 1365, "height": 768},
         )
         page = context.new_page()
 
