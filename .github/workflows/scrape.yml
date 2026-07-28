@@ -50,16 +50,41 @@ jobs:
 
       - name: Save results to GitHub
         if: always()
-        shell: cmd
-        run: |
-          git config user.name "lottery-results-bot"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add results.json
-          git diff --cached --quiet
-          if not errorlevel 1 (
-            echo No data changes
-            exit /b 0
-          )
-          git commit -m "chore: update lottery results"
-          git pull --rebase origin %GITHUB_REF_NAME%
-          git push origin HEAD:%GITHUB_REF_NAME%
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          retries: 3
+          script: |
+            const fs = require("fs");
+            const path = "results.json";
+            const branch = context.ref.replace("refs/heads/", "");
+            const localContent = fs.readFileSync(path, "utf8");
+
+            const current = await github.rest.repos.getContent({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path,
+              ref: branch
+            });
+
+            const remoteContent = Buffer.from(
+              current.data.content,
+              "base64"
+            ).toString("utf8");
+
+            if (localContent === remoteContent) {
+              core.info("No data changes");
+              return;
+            }
+
+            await github.rest.repos.createOrUpdateFileContents({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path,
+              branch,
+              message: "chore: update lottery results",
+              content: Buffer.from(localContent).toString("base64"),
+              sha: current.data.sha
+            });
+
+            core.info("results.json updated successfully");
