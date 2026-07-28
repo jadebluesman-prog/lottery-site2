@@ -354,7 +354,10 @@ function renderHistory() {
 
 async function loadData() {
   try {
-    const res = await fetch("./results.json?_=" + Date.now());
+    const res = await fetch(
+      "https://raw.githubusercontent.com/jadebluesman-prog/lottery-site2/main/results.json?_=" +
+        Date.now()
+    );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     DATA = await res.json();
     const updatedEl = document.getElementById("updated-at");
