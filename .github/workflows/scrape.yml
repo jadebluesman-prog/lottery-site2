@@ -8,10 +8,11 @@ on:
       - "scrape_and_update.py"
       - ".github/workflows/scrape.yml"
   schedule:
-    # ทุก 10 นาที ระหว่าง 17:30–20:50 น. เวลาไทย (GitHub ใช้เวลา UTC)
-    - cron: "30,40,50 10 * * *"
-    - cron: "*/10 11-12 * * *"
-    - cron: "0,10,20,30,40,50 13 * * *"
+    # ทุก 10 นาที ระหว่าง 17:33–20:53 น. เวลาไทย (GitHub ใช้เวลา UTC)
+    # เลี่ยงนาที :00/:10/:20 ซึ่งเป็นช่วงที่ GitHub Scheduler หนาแน่น
+    - cron: "33,43,53 10 * * *"
+    - cron: "3,13,23,33,43,53 11-12 * * *"
+    - cron: "3,13,23,33,43,53 13 * * *"
 
 permissions:
   contents: write
